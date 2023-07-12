@@ -17,6 +17,8 @@ class PomodoroApp extends StatelessWidget{
     );
   }
 }
+// SessionStatus: 作業中, 小休憩, 長休憩か状態を表す
+enum SessionStatus { work, shortBreak, longBreak }
 
 class PomodoroHomePage extends StatefulWidget{
   PomodoroHomePage({Key? key, required this.title}) : super(key : key);
@@ -29,8 +31,24 @@ class PomodoroHomePage extends StatefulWidget{
 class _PomodoroHomePageState extends State<PomodoroHomePage>{
   int _studyHours = 2;  //合計時間
   int _longBreak = 15;  //100分ごとの休憩
-  int _timeRemaining = 25 * 60; //
+  int _timeRemaining = 1 * 60; //残り時間
   Timer? _timer;  //スタートするまでnull
+
+  int _studySessionCount = 0; //何回作業セッションが行われたかカウント
+  SessionStatus _sessionStatus = SessionStatus.work; // 初期状態は作業中
+
+  String get sessionLabel{
+    switch(_sessionStatus){
+      case SessionStatus.work:
+        return "作業セッション中";
+      case SessionStatus.shortBreak:
+        return "小休憩中";
+      case SessionStatus.longBreak:
+        return "長休憩中";
+      default:
+        return "";
+    }
+  }
 
   void _startTimer(){
     if(_timer != null){
@@ -42,7 +60,7 @@ class _PomodoroHomePageState extends State<PomodoroHomePage>{
           _timeRemaining--;
         }else{
           timer.cancel();
-          _showAlert(context);
+          _transitionSession();
         }
       });
     });
@@ -51,10 +69,29 @@ class _PomodoroHomePageState extends State<PomodoroHomePage>{
   void _resetTimer(){
     setState(() {
       _timeRemaining = 25 * 60;
+      _sessionStatus = SessionStatus.work; //初期状態にリセット
     });
     if(_timer != null){
       _timer!.cancel();
       _timer = null;
+    }
+  }
+
+  void _transitionSession(){
+    _studySessionCount++;
+
+    //100分ごとに長休憩にする
+    if(_studySessionCount % 4 == 0){
+      _sessionStatus = SessionStatus.longBreak;
+      _timeRemaining = _longBreak * 60;
+    }else{
+      _sessionStatus = _sessionStatus ==SessionStatus.work
+          ? SessionStatus.shortBreak
+          : SessionStatus.work;
+
+      _timeRemaining = _sessionStatus == SessionStatus.work
+          ? 25 * 60
+          : 5 * 60;
     }
   }
 
@@ -108,7 +145,7 @@ class _PomodoroHomePageState extends State<PomodoroHomePage>{
               ],
             ),
             SizedBox(height: 50),
-            Text("作業セッション中",style: Theme.of(context).textTheme.headline6)
+            Text(sessionLabel,style: Theme.of(context).textTheme.headline6)
           ],
         ),
       ),

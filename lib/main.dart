@@ -145,7 +145,7 @@ class _PomodoroHomePageState extends State<PomodoroHomePage>{
               ],
             ),
             SizedBox(height: 50),
-            Text(sessionLabel,style: Theme.of(context).textTheme.headline6)
+            Text(sessionLabel, style: Theme.of(context).textTheme.headline6)
           ],
         ),
       ),

@@ -25,7 +25,7 @@ class PomodoroApp extends StatelessWidget {
 }
 
 // SessionStatus: 作業中, 小休憩, 長休憩か状態を表す
-enum SessionStatus { work, shortBreak, longBreak }
+enum SessionStatus { none, work, shortBreak, longBreak }
 
 class PomodoroHomePage extends StatefulWidget {
   const PomodoroHomePage({Key? key, required this.title}) : super(key: key);
@@ -40,15 +40,16 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
   int _longBreak = 15; //100分ごとの休憩
   int _timeRemaining = 25 * 60; //残り時間
   Timer? _timer; //スタートするまでnull
+  int _totalWorkTime = 0; //合計作業時間を保存
 
   int _studySessionCount = 0; //何回作業セッションが行われたかカウント
-  SessionStatus _sessionStatus = SessionStatus.work; // 初期状態は作業中
+  SessionStatus _sessionStatus = SessionStatus.none; // 初期状態
 
   void _openSettings() async {
     //設定画面を開く
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TimerSettingScreen()),
+      MaterialPageRoute(builder: (context) => const TimerSettingScreen()),
     );
 
     //結果からそれを作業時間に設定する
@@ -60,8 +61,11 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
     }
   }
 
+  //状態ラベル
   String get sessionLabel {
     switch (_sessionStatus) {
+      case SessionStatus.none:
+        return "";
       case SessionStatus.work:
         return "作業セッション中";
       case SessionStatus.shortBreak:
@@ -74,6 +78,7 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
   }
 
   void _startTimer() {
+    _sessionStatus = SessionStatus.work;
     if (_timer != null) {
       _timer!.cancel();
     }
@@ -81,6 +86,9 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
       setState(() {
         if (_timeRemaining > 0) {
           _timeRemaining--;
+          if (_sessionStatus == SessionStatus.work) {
+            _totalWorkTime++;
+          }
         } else {
           timer.cancel();
           _transitionSession();
@@ -92,7 +100,7 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
   void _resetTimer() {
     setState(() {
       _timeRemaining = 25 * 60;
-      _sessionStatus = SessionStatus.work; //初期状態にリセット
+      _sessionStatus = SessionStatus.none; //初期状態にリセット
     });
     if (_timer != null) {
       _timer!.cancel();
@@ -142,7 +150,7 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
         title: Text(widget.title),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
             onPressed: _openSettings,
           )
         ],
@@ -174,7 +182,11 @@ class _PomodoroHomePageState extends State<PomodoroHomePage> {
               ],
             ),
             const SizedBox(height: 50),
-            Text(sessionLabel, style: Theme.of(context).textTheme.titleLarge)
+            Text(sessionLabel, style: Theme.of(context).textTheme.titleLarge),
+            Text(
+              "合計作業時間: ${(_totalWorkTime ~/ 60).toString().padLeft(2, '0')}:${(_totalWorkTime % 60).toString().padLeft(2, '0')}",
+              style: Theme.of(context).textTheme.headline5,
+            )
           ],
         ),
       ),

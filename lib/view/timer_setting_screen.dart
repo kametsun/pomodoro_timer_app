@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TimerSettingScreen extends StatefulWidget {
-  TimerSettingScreen({Key? key}) : super(key: key);
+  const TimerSettingScreen({Key? key}) : super(key: key);
 
   @override
   _TimerSettingScreenState createState() => _TimerSettingScreenState();
@@ -9,13 +9,13 @@ class TimerSettingScreen extends StatefulWidget {
 
 class _TimerSettingScreenState extends State<TimerSettingScreen> {
   double _currentSliderValue = 15; //長休憩時間の初期状態
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("設定"),
+        title: const Text("設定"),
       ),
       body: Center(
         child: Column(
@@ -23,7 +23,7 @@ class _TimerSettingScreenState extends State<TimerSettingScreen> {
           children: <Widget>[
             Text(
               "作業時間を設定してください",
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             TextField(
               controller: _controller,
@@ -31,7 +31,7 @@ class _TimerSettingScreenState extends State<TimerSettingScreen> {
             ),
             Text(
               "長休憩時間を設定してください",
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
             Slider(
               value: _currentSliderValue,
@@ -56,12 +56,12 @@ class _TimerSettingScreenState extends State<TimerSettingScreen> {
                   });
                 } else {
                   //無効な場合のエラー
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text("無効な入力です。再度入力してください。"),
                   ));
                 }
               }, //ボタン押された時の動作
-              child: Text("設定"),
+              child: const Text("設定"),
             )
           ],
         ),
